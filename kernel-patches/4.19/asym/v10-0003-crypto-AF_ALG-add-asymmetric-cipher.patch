@@ -19,10 +19,10 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  create mode 100644 crypto/algif_akcipher.c
 
 diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 9327fbfccf5a..1785679b27f8 100644
+index 0fb95867..aee845d7 100644
 --- a/crypto/Kconfig
 +++ b/crypto/Kconfig
-@@ -1772,6 +1772,15 @@ config CRYPTO_USER_API_AEAD
+@@ -1862,6 +1862,15 @@ config CRYPTO_USER_API_AEAD
  	  This option enables the user-spaces interface for AEAD
  	  cipher algorithms.
  
@@ -39,27 +39,27 @@ index 9327fbfccf5a..1785679b27f8 100644
  	bool
  
 diff --git a/crypto/Makefile b/crypto/Makefile
-index d674884b2d51..526a4e5336af 100644
+index f6a234d0..8818fa22 100644
 --- a/crypto/Makefile
 +++ b/crypto/Makefile
-@@ -135,6 +135,7 @@ obj-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
+@@ -141,6 +141,7 @@ obj-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
  obj-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
  obj-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
  obj-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
 +obj-$(CONFIG_CRYPTO_USER_API_AKCIPHER) += algif_akcipher.o
+ obj-$(CONFIG_CRYPTO_ZSTD) += zstd.o
  
  ecdh_generic-y := ecc.o
- ecdh_generic-y += ecdh.o
 diff --git a/crypto/algif_akcipher.c b/crypto/algif_akcipher.c
 new file mode 100644
-index 000000000000..f7d7582eef67
+index 00000000..9660d0eb
 --- /dev/null
 +++ b/crypto/algif_akcipher.c
 @@ -0,0 +1,474 @@
 +/*
 + * algif_akcipher: User-space interface for asymmetric cipher algorithms
 + *
-+ * Copyright (C) 2018 - 2019, Stephan Mueller <smueller@chronox.de>
++ * Copyright (C) 2018, Stephan Mueller <smueller@chronox.de>
 + *
 + * This file provides the user-space API for asymmetric ciphers.
 + *
@@ -531,7 +531,7 @@ index 000000000000..f7d7582eef67
 +MODULE_AUTHOR("Stephan Mueller <smueller@chronox.de>");
 +MODULE_DESCRIPTION("Asymmetric kernel crypto API user space interface");
 diff --git a/include/crypto/if_alg.h b/include/crypto/if_alg.h
-index cc1d3eecd556..79c5010a713b 100644
+index 735e7600..20e4d71f 100644
 --- a/include/crypto/if_alg.h
 +++ b/include/crypto/if_alg.h
 @@ -23,6 +23,7 @@

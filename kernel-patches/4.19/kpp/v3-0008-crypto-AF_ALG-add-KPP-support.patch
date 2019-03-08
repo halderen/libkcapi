@@ -45,10 +45,10 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  create mode 100644 crypto/algif_kpp.c
 
 diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 1785679b27f8..601b7e7b30b0 100644
+index aee845d7..a6f132e4 100644
 --- a/crypto/Kconfig
 +++ b/crypto/Kconfig
-@@ -1781,6 +1781,16 @@ config CRYPTO_USER_API_AKCIPHER
+@@ -1871,6 +1871,16 @@ config CRYPTO_USER_API_AKCIPHER
  	  This option enables the user-space interface for asymmetric
  	  key cipher algorithms.
  
@@ -66,22 +66,22 @@ index 1785679b27f8..601b7e7b30b0 100644
  	bool
  
 diff --git a/crypto/Makefile b/crypto/Makefile
-index c58f1fe2176a..5540e9d3ef0a 100644
+index 329e9262..99a494af 100644
 --- a/crypto/Makefile
 +++ b/crypto/Makefile
-@@ -141,6 +141,7 @@ obj-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
+@@ -147,6 +147,7 @@ obj-$(CONFIG_CRYPTO_USER_API_SKCIPHER) += algif_skcipher.o
  obj-$(CONFIG_CRYPTO_USER_API_RNG) += algif_rng.o
  obj-$(CONFIG_CRYPTO_USER_API_AEAD) += algif_aead.o
  obj-$(CONFIG_CRYPTO_USER_API_AKCIPHER) += algif_akcipher.o
 +obj-$(CONFIG_CRYPTO_USER_API_KPP) += algif_kpp.o
+ obj-$(CONFIG_CRYPTO_ZSTD) += zstd.o
  
  ecdh_generic-y := ecc.o
- ecdh_generic-y += ecdh.o
 diff --git a/crypto/af_alg.c b/crypto/af_alg.c
-index 681e77e1ca09..2699f3798acd 100644
+index dad9b920..2fa936f2 100644
 --- a/crypto/af_alg.c
 +++ b/crypto/af_alg.c
-@@ -855,6 +855,8 @@ int af_alg_sendmsg(struct socket *sock, struct msghdr *msg, size_t size,
+@@ -858,6 +858,8 @@ int af_alg_sendmsg(struct socket *sock, struct msghdr *msg, size_t size,
  		case ALG_OP_SIGN:
  		case ALG_OP_ENCRYPT:
  		case ALG_OP_DECRYPT:
@@ -92,14 +92,14 @@ index 681e77e1ca09..2699f3798acd 100644
  		default:
 diff --git a/crypto/algif_kpp.c b/crypto/algif_kpp.c
 new file mode 100644
-index 000000000000..3f561fe2b8ab
+index 00000000..e68ed0c7
 --- /dev/null
 +++ b/crypto/algif_kpp.c
 @@ -0,0 +1,612 @@
 +/*
 + * algif_kpp: User-space interface for key protocol primitives algorithms
 + *
-+ * Copyright (C) 2018 - 2019, Stephan Mueller <smueller@chronox.de>
++ * Copyright (C) 2018, Stephan Mueller <smueller@chronox.de>
 + *
 + * This file provides the user-space API for key protocol primitives.
 + *
@@ -709,7 +709,7 @@ index 000000000000..3f561fe2b8ab
 +MODULE_AUTHOR("Stephan Mueller <smueller@chronox.de>");
 +MODULE_DESCRIPTION("Key protocol primitives kernel crypto API user space interface");
 diff --git a/include/crypto/if_alg.h b/include/crypto/if_alg.h
-index 641315e3051a..426135ff0617 100644
+index 387eaf82..168bb305 100644
 --- a/include/crypto/if_alg.h
 +++ b/include/crypto/if_alg.h
 @@ -24,6 +24,7 @@

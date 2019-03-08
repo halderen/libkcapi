@@ -19,7 +19,7 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  2 files changed, 29 insertions(+), 1 deletion(-)
 
 diff --git a/Documentation/crypto/api-kpp.rst b/Documentation/crypto/api-kpp.rst
-index 7d86ab906bdf..7b2c0d4a9d4a 100644
+index 7d86ab90..7b2c0d4a 100644
 --- a/Documentation/crypto/api-kpp.rst
 +++ b/Documentation/crypto/api-kpp.rst
 @@ -11,7 +11,7 @@ Key-agreement Protocol Primitives (KPP) Cipher API
@@ -32,7 +32,7 @@ index 7d86ab906bdf..7b2c0d4a9d4a 100644
  Key-agreement Protocol Primitives (KPP) Cipher Request Handle
  -------------------------------------------------------------
 diff --git a/include/crypto/kpp.h b/include/crypto/kpp.h
-index 1bde0a6514fa..88a9cf4c0179 100644
+index 1bde0a65..88a9cf4c 100644
 --- a/include/crypto/kpp.h
 +++ b/include/crypto/kpp.h
 @@ -51,6 +51,9 @@ struct crypto_kpp {

@@ -10,7 +10,7 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  2 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/include/crypto/ecdh.h b/include/crypto/ecdh.h
-index d696317c43a8..0a3aec7b6548 100644
+index d696317c..0a3aec7b 100644
 --- a/include/crypto/ecdh.h
 +++ b/include/crypto/ecdh.h
 @@ -40,7 +40,7 @@
@@ -23,7 +23,7 @@ index d696317c43a8..0a3aec7b6548 100644
  };
  
 diff --git a/security/keys/dh.c b/security/keys/dh.c
-index d1ea9f325f94..a157b68a5248 100644
+index 711e89d8..39bc2ac8 100644
 --- a/security/keys/dh.c
 +++ b/security/keys/dh.c
 @@ -18,7 +18,7 @@

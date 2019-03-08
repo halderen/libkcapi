@@ -15,10 +15,10 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  1 file changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/crypto/dh.c b/crypto/dh.c
-index 5659fe7f446d..7d3485682edc 100644
+index 09a44de4..aa05c845 100644
 --- a/crypto/dh.c
 +++ b/crypto/dh.c
-@@ -53,6 +53,10 @@ static int dh_check_params_length(unsigned int p_len)
+@@ -55,6 +55,10 @@ static int dh_check_params_length(unsigned int p_len)
  
  static int dh_set_params(struct dh_ctx *ctx, struct dh *params)
  {
@@ -29,7 +29,7 @@ index 5659fe7f446d..7d3485682edc 100644
  	if (dh_check_params_length(params->p_size << 3))
  		return -EINVAL;
  
-@@ -104,7 +108,7 @@ static int dh_compute_value(struct kpp_request *req)
+@@ -161,7 +165,7 @@ static int dh_compute_value(struct kpp_request *req)
  	if (!val)
  		return -ENOMEM;
  

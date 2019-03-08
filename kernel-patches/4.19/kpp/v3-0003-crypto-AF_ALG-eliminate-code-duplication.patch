@@ -12,10 +12,10 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  1 file changed, 3 insertions(+), 14 deletions(-)
 
 diff --git a/crypto/af_alg.c b/crypto/af_alg.c
-index e3f7c5932f04..681e77e1ca09 100644
+index 37cc3cbc..dad9b920 100644
 --- a/crypto/af_alg.c
 +++ b/crypto/af_alg.c
-@@ -248,34 +248,23 @@ static int alg_setsockopt(struct socket *sock, int level, int optname,
+@@ -252,34 +252,23 @@ static int alg_setsockopt(struct socket *sock, int level, int optname,
  	if (level != SOL_ALG || !type)
  		goto unlock;
  

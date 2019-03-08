@@ -28,7 +28,7 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  create mode 100644 crypto/dhparameter.asn1
 
 diff --git a/crypto/Makefile b/crypto/Makefile
-index 526a4e5336af..c58f1fe2176a 100644
+index 8818fa22..329e9262 100644
 --- a/crypto/Makefile
 +++ b/crypto/Makefile
 @@ -31,7 +31,12 @@ obj-$(CONFIG_CRYPTO_HASH2) += crypto_hash.o
@@ -36,27 +36,28 @@ index 526a4e5336af..c58f1fe2176a 100644
  obj-$(CONFIG_CRYPTO_KPP2) += kpp.o
  
 -dh_generic-y := dh.o
-+$(obj)/dhparameter-asn1.o: $(obj)/dhparameter-asn1.c $(obj)/dhparameter-asn1.h
-+$(obj)/dh_helper.o: $(obj)/dhparameter-asn1.h
-+clean-files += dhparameter-asn1.c dhparameter-asn1.h
++$(obj)/dhparameter.asn1.o: $(obj)/dhparameter.asn1.c $(obj)/dhparameter.asn1.h
++$(obj)/dh_helper.o: $(obj)/dhparameter.asn1.h
++clean-files += dhparameter.asn1.c dhparameter.asn1.h
 +
-+dh_generic-y := dhparameter-asn1.o
++dh_generic-y := dhparameter.asn1.o
 +dh_generic-y += dh.o
  dh_generic-y += dh_helper.o
  obj-$(CONFIG_CRYPTO_DH) += dh_generic.o
  
 diff --git a/crypto/dh.c b/crypto/dh.c
-index 7d3485682edc..0fcc55c93dff 100644
+index aa05c845..2574034a 100644
 --- a/crypto/dh.c
 +++ b/crypto/dh.c
-@@ -21,14 +21,24 @@ struct dh_ctx {
- 	MPI xa;
+@@ -22,15 +22,25 @@ struct dh_ctx {
+ 	MPI xa;	/* Value is guaranteed to be set. */
  };
  
 -static void dh_clear_ctx(struct dh_ctx *ctx)
 +static inline void dh_clear_params(struct dh_ctx *ctx)
  {
  	mpi_free(ctx->p);
+ 	mpi_free(ctx->q);
  	mpi_free(ctx->g);
 +}
 +
@@ -75,7 +76,7 @@ index 7d3485682edc..0fcc55c93dff 100644
  /*
   * If base is g we compute the public key
   *	ya = g^xa mod p; [RFC2631 sec 2.1.1]
-@@ -71,6 +81,23 @@ static int dh_set_params(struct dh_ctx *ctx, struct dh *params)
+@@ -79,6 +89,23 @@ static int dh_set_params(struct dh_ctx *ctx, struct dh *params)
  	return 0;
  }
  
@@ -99,7 +100,7 @@ index 7d3485682edc..0fcc55c93dff 100644
  static int dh_set_secret(struct crypto_kpp *tfm, const void *buf,
  			 unsigned int len)
  {
-@@ -78,7 +105,7 @@ static int dh_set_secret(struct crypto_kpp *tfm, const void *buf,
+@@ -86,7 +113,7 @@ static int dh_set_secret(struct crypto_kpp *tfm, const void *buf,
  	struct dh params;
  
  	/* Free the old MPI key if any */
@@ -108,7 +109,7 @@ index 7d3485682edc..0fcc55c93dff 100644
  
  	if (crypto_dh_decode_key(buf, len, &params) < 0)
  		goto err_clear_ctx;
-@@ -104,7 +131,6 @@ static int dh_compute_value(struct kpp_request *req)
+@@ -161,7 +188,6 @@ static int dh_compute_value(struct kpp_request *req)
  	MPI base, val = mpi_alloc(0);
  	int ret = 0;
  	int sign;
@@ -116,7 +117,7 @@ index 7d3485682edc..0fcc55c93dff 100644
  	if (!val)
  		return -ENOMEM;
  
-@@ -156,6 +182,7 @@ static void dh_exit_tfm(struct crypto_kpp *tfm)
+@@ -216,6 +242,7 @@ static void dh_exit_tfm(struct crypto_kpp *tfm)
  }
  
  static struct kpp_alg dh = {
@@ -125,44 +126,50 @@ index 7d3485682edc..0fcc55c93dff 100644
  	.generate_public_key = dh_compute_value,
  	.compute_shared_secret = dh_compute_value,
 diff --git a/crypto/dh_helper.c b/crypto/dh_helper.c
-index 24fdb2ecaa85..0c0a40e377fc 100644
+index edacda5f..0761fa00 100644
 --- a/crypto/dh_helper.c
 +++ b/crypto/dh_helper.c
 @@ -13,6 +13,7 @@
  #include <linux/string.h>
  #include <crypto/dh.h>
  #include <crypto/kpp.h>
-+#include "dhparameter-asn1.h"
++#include "dhparameter.asn1.h"
  
- #define DH_KPP_SECRET_MIN_SIZE (sizeof(struct kpp_secret) + 3 * sizeof(int))
+ #define DH_KPP_SECRET_MIN_SIZE (sizeof(struct kpp_secret) + 4 * sizeof(int))
  
-@@ -53,13 +54,22 @@ int crypto_dh_encode_key(char *buf, unsigned int len, const struct dh *params)
- 	if (len != crypto_dh_key_len(params))
+@@ -53,16 +54,27 @@ int crypto_dh_encode_key(char *buf, unsigned int len, const struct dh *params)
+ 	if (unlikely(!len))
  		return -EINVAL;
  
 +	/* Prevention of out-of-bounds access in decode code path */
 +	if ((!params->key && params->key_size) ||
 +	    (!params->p && params->p_size) ||
++	    (!params->q && params->q_size) ||
 +	    (!params->g && params->g_size))
 +		return -EINVAL;
 +
- 	ptr = dh_pack_data(ptr, &secret, sizeof(secret));
- 	ptr = dh_pack_data(ptr, &params->key_size, sizeof(params->key_size));
- 	ptr = dh_pack_data(ptr, &params->p_size, sizeof(params->p_size));
- 	ptr = dh_pack_data(ptr, &params->g_size, sizeof(params->g_size));
--	ptr = dh_pack_data(ptr, params->key, params->key_size);
--	ptr = dh_pack_data(ptr, params->p, params->p_size);
--	dh_pack_data(ptr, params->g, params->g_size);
+ 	ptr = dh_pack_data(ptr, end, &secret, sizeof(secret));
+ 	ptr = dh_pack_data(ptr, end, &params->key_size,
+ 			   sizeof(params->key_size));
+ 	ptr = dh_pack_data(ptr, end, &params->p_size, sizeof(params->p_size));
+ 	ptr = dh_pack_data(ptr, end, &params->q_size, sizeof(params->q_size));
+ 	ptr = dh_pack_data(ptr, end, &params->g_size, sizeof(params->g_size));
+-	ptr = dh_pack_data(ptr, end, params->key, params->key_size);
+-	ptr = dh_pack_data(ptr, end, params->p, params->p_size);
+-	ptr = dh_pack_data(ptr, end, params->q, params->q_size);
+-	ptr = dh_pack_data(ptr, end, params->g, params->g_size);
 +	if (params->key)
-+		ptr = dh_pack_data(ptr, params->key, params->key_size);
++		ptr = dh_pack_data(ptr, end, params->key, params->key_size);
 +	if (params->p)
-+		ptr = dh_pack_data(ptr, params->p, params->p_size);
++		ptr = dh_pack_data(ptr, end, params->p, params->p_size);
++	if (params->q)
++		ptr = dh_pack_data(ptr, end, params->q, params->q_size);
 +	if (params->g)
-+		dh_pack_data(ptr, params->g, params->g_size);
- 
++		ptr = dh_pack_data(ptr, end, params->g, params->g_size);
+ 	if (ptr != end)
+ 		return -EINVAL;
  	return 0;
- }
-@@ -109,3 +119,40 @@ int crypto_dh_decode_key(const char *buf, unsigned int len, struct dh *params)
+@@ -120,3 +132,40 @@ int crypto_dh_decode_key(const char *buf, unsigned int len, struct dh *params)
  	return 0;
  }
  EXPORT_SYMBOL_GPL(crypto_dh_decode_key);
@@ -205,7 +212,7 @@ index 24fdb2ecaa85..0c0a40e377fc 100644
 +EXPORT_SYMBOL_GPL(dh_parse_params_pkcs3);
 diff --git a/crypto/dhparameter.asn1 b/crypto/dhparameter.asn1
 new file mode 100644
-index 000000000000..e9107c80478d
+index 00000000..e9107c80
 --- /dev/null
 +++ b/crypto/dhparameter.asn1
 @@ -0,0 +1,4 @@
@@ -214,23 +221,25 @@ index 000000000000..e9107c80478d
 +	base			INTEGER ({ dh_get_g })
 +}
 diff --git a/include/crypto/dh.h b/include/crypto/dh.h
-index 71e1bb24d79f..80b36843c213 100644
+index 7e0dad94..dc193c4d 100644
 --- a/include/crypto/dh.h
 +++ b/include/crypto/dh.h
-@@ -35,9 +35,9 @@
+@@ -37,10 +37,10 @@
   * @g_size:	Size of DH generator G
   */
  struct dh {
 -	void *key;
 -	void *p;
+-	void *q;
 -	void *g;
 +	const void *key;
 +	const void *p;
++	const void *q;
 +	const void *g;
  	unsigned int key_size;
  	unsigned int p_size;
- 	unsigned int g_size;
-@@ -84,4 +84,19 @@ int crypto_dh_encode_key(char *buf, unsigned int len, const struct dh *params);
+ 	unsigned int q_size;
+@@ -88,4 +88,19 @@ int crypto_dh_encode_key(char *buf, unsigned int len, const struct dh *params);
   */
  int crypto_dh_decode_key(const char *buf, unsigned int len, struct dh *params);
  

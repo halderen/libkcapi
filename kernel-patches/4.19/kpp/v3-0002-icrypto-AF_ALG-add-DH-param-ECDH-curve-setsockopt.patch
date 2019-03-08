@@ -19,10 +19,10 @@ Signed-off-by: Stephan Mueller <smueller@chronox.de>
  3 files changed, 16 insertions(+)
 
 diff --git a/crypto/af_alg.c b/crypto/af_alg.c
-index f2df3dc5210a..e3f7c5932f04 100644
+index c6184f2c..37cc3cbc 100644
 --- a/crypto/af_alg.c
 +++ b/crypto/af_alg.c
-@@ -261,6 +261,18 @@ static int alg_setsockopt(struct socket *sock, int level, int optname,
+@@ -265,6 +265,18 @@ static int alg_setsockopt(struct socket *sock, int level, int optname,
  
  		err = alg_setkey(sk, optval, optlen, type->setpubkey);
  		break;
@@ -42,7 +42,7 @@ index f2df3dc5210a..e3f7c5932f04 100644
  		if (sock->state == SS_CONNECTED)
  			goto unlock;
 diff --git a/include/crypto/if_alg.h b/include/crypto/if_alg.h
-index 79c5010a713b..641315e3051a 100644
+index 20e4d71f..387eaf82 100644
 --- a/include/crypto/if_alg.h
 +++ b/include/crypto/if_alg.h
 @@ -53,6 +53,8 @@ struct af_alg_type {
@@ -55,7 +55,7 @@ index 79c5010a713b..641315e3051a 100644
  	int (*accept_nokey)(void *private, struct sock *sk);
  	int (*setauthsize)(void *private, unsigned int authsize);
 diff --git a/include/uapi/linux/if_alg.h b/include/uapi/linux/if_alg.h
-index a53275c85612..e19a5addbb54 100644
+index a53275c8..e19a5add 100644
 --- a/include/uapi/linux/if_alg.h
 +++ b/include/uapi/linux/if_alg.h
 @@ -36,6 +36,8 @@ struct af_alg_iv {
